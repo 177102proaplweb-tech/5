@@ -12,8 +12,31 @@
       <button id="example">example</button>
     </div>
     <div id="answer"></div> -->
-    <div id='create'>
-      
+    <div id="lobbyDiv">
+      <text>Hand size (1-25):</text>
+      <input id="handSizeInput" type="number" min="1" max="25" value="5" />
+      <button id="createLobby">Create Lobby</button>
+      <text id="createdLobbyCode"></text>
+      <br />
+      <br />
+      <input id="joinLobbyCode" type="text" />
+      <button id="joinLobby">Join Lobby</button>
+    </div>
+
+    <div id="playAreaDiv" hidden="true">
+      <div id="tableDiv">
+        <img
+          id="tableCard"
+          src="https://deckofcardsapi.com/static/img/back.png"
+        />
+        <img
+          id="pileCard"
+          src="https://deckofcardsapi.com/static/img/back.png"
+        />
+        <text id="turnText">Your turn</text>
+      </div>
+      <div id="hand"></div>
+      <!-- <button id="passTurn">Pass Turn</button> -->
     </div>
     <script src="script.js"></script>
   </body>
