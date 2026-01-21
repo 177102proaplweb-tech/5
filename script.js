@@ -59,7 +59,7 @@ function endTurn() {
     .then((array) => {
       myTurn = 0;
       turnText.innerHTML = "Opponent's turn";
-      hold = 1;
+      hold = 2;
       console.log("Moved joker");
       console.log(array);
     });
@@ -79,7 +79,19 @@ function playCard(e) {
     .then((array) => {
       handHTML.removeChild(e.target);
       pileCard.src = `https://deckofcardsapi.com/static/img/${e.target.code}.png`;
-      endTurn();
+      if (handHTML.children.length > 0) endTurn();
+      else {
+        fetch(
+          `https://deckofcardsapi.com/api/deck/${deckID}/pile/no_jokers/add/?cards=X1,X2`,
+        )
+          .then((response) => response.json())
+          .then((array) => {
+            myTurn = 1;
+            turnText.innerHTML = "You win!";
+            // console.log("Moved joker");
+            // console.log(array);
+          });
+      }
     });
 }
 
@@ -100,7 +112,6 @@ function drawCards(n) {
       });
       if (array.cards.length < n) {
         // TODO: reshuffle cards
-
         fetch(
           `https://deckofcardsapi.com/api/deck/${deckID}/pile/table/return/`,
         ).then(
@@ -154,7 +165,7 @@ joinLobbyButton.addEventListener("click", function () {
         .then((array) => {
           console.log("Moved joker");
           console.log(array);
-          hold = 1;
+          hold = 5;
           console.log(`Drawing ${startingHandSize} cards`);
           fetch(
             `https://deckofcardsapi.com/api/deck/${deckID}/draw/?count=${startingHandSize}`,
@@ -186,7 +197,7 @@ joinLobbyButton.addEventListener("click", function () {
               turnText.innerHTML = "Opponent's turn";
               lobbyDiv.hidden = true;
               playAreaDiv.hidden = false;
-              setInterval(monitorNoJokersPile, 1000);
+              setInterval(monitorNoJokersPile, 2000);
             });
           // console.log(`Drawing ${startingHandSize} cards for both players`);
           // fetch(
@@ -261,7 +272,7 @@ createLobbyButton.addEventListener("click", function () {
                               img.width = 169;
                               handHTML.appendChild(img);
                             });
-                            setInterval(monitorNoJokersPile, 1000);
+                            setInterval(monitorNoJokersPile, 2000);
                           });
                       });
                     });
@@ -272,8 +283,8 @@ createLobbyButton.addEventListener("click", function () {
 });
 function monitorNoJokersPile() {
   if (deckID == null || myTurn == 1) return;
-  if (hold == 1) {
-    hold = 0;
+  if (hold > 0) {
+    hold -= 1;
     return;
   }
   fetch(`https://deckofcardsapi.com/api/deck/${deckID}/pile/no_jokers/list`)
@@ -281,6 +292,11 @@ function monitorNoJokersPile() {
     .then((array) => {
       // console.log("Checking no_jokers pile");
       // console.log(array);
+      if (array.piles.jokers.remaining == 0) {
+        turnText.innerHTML = "Opponent wins";
+        myTurn = 1;
+        return;
+      }
       let nextTurn = array.piles.no_jokers.remaining;
       // console.log(nextTurn);
       if (nextTurn) {
@@ -289,6 +305,7 @@ function monitorNoJokersPile() {
         fetch(`https://deckofcardsapi.com/api/deck/${deckID}/pile/table/list`)
           .then((response) => response.json())
           .then((array) => {
+            console.log("Updating card");
             console.log(array);
             if (!array.piles.table) return;
             pileCard.src = `https://deckofcardsapi.com/static/img/${array.piles.table.cards[array.piles.table.cards.length - 1].code}.png`;
